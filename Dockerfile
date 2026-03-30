@@ -7,7 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY monitor/ ./monitor/
 
-# State is persisted to /app/data
-VOLUME ["/app/data"]
-
+# config.yml and /app/data are provided at runtime via volume mounts —
+# see docker-compose.yml. Nothing config-related is baked into the image.
 CMD ["python", "-m", "monitor.main"]

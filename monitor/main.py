@@ -104,6 +104,15 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
 
 def run() -> None:
     config_file = os.environ.get("CONFIG_FILE", "/app/config.yml")
+
+    if not os.path.isfile(config_file):
+        raise SystemExit(
+            f"Config file not found: {config_file}\n"
+            "Mount your config into the container, e.g.:\n"
+            "  docker compose up   (config.yml must exist next to docker-compose.yml)\n"
+            "See config.yml.example for the required format."
+        )
+
     cfg = GlobalConfig.from_yaml(config_file)
 
     logging.basicConfig(

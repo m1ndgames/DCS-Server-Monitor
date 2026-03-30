@@ -6,5 +6,7 @@ services:
       CONFIG_FILE: /app/config.yml
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
+      # Mount your config file here — copy config.yml.example to config.yml and edit it
       - ./config.yml:/app/config.yml:ro
+      # Persistent state so restarts don't re-fire alerts
       - ./data:/app/data
