@@ -1,0 +1,24 @@
+# Caddy reverse proxy for the DCS Web UI
+#
+# Run this on the same machine as the DCS dedicated server.
+# Caddy forwards requests to localhost:8088, so DCS treats them as local
+# and the default webui_secret ("DigitalCombatSimulator.com") keeps working.
+#
+# Basic auth protects the endpoint from unauthorized external access.
+# Generate a password hash with:
+#   caddy hash-password --plaintext 'your-password'
+#
+# Replace the port below with whatever you want to expose externally.
+# If you have a domain and want automatic HTTPS, replace ":8089" with
+# "dcs.yourdomain.com" — Caddy will obtain a Let's Encrypt certificate
+# automatically.
+
+:8089 {
+    basicauth {
+        # username: monitor
+        # Replace the hash below — do not use this example hash in production
+        monitor $2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4IILHHjG9mm
+    }
+
+    reverse_proxy localhost:8088
+}
