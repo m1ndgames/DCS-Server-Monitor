@@ -7,8 +7,7 @@ webui_timeout: 10           # HTTP request timeout (seconds)
 log_level: INFO             # DEBUG | INFO | WARNING | ERROR
 
 servers:
-  - name: "Caucasus 24/7"
-    host: "10.0.0.1"
+  - host: "10.0.0.1"
     game_port: 10308
     webui_port: 8088
     # webui_secret defaults to "DigitalCombatSimulator.com" for local connections.
@@ -18,8 +17,7 @@ servers:
     # webui_pass: your-password
     # discord_webhook_url: optional — overrides the global webhook for this server
 
-  - name: "Persian Gulf Server"
-    host: "10.0.0.2"
+  - host: "10.0.0.2"
     game_port: 10308
     webui_port: 8088
     # Per-server Discord channel
@@ -27,8 +25,7 @@ servers:
     # Check this server more frequently
     check_interval: 30
 
-  - name: "Syria Night Operations"
-    host: "syria.example.com"
+  - host: "syria.example.com"
     game_port: 10309           # non-default port
     webui_port: 8089
     webui_secret: "custom-secret-key"

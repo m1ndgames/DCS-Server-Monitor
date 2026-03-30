@@ -41,7 +41,7 @@ class GlobalConfig:
         url = server.discord_webhook_url or self.discord_webhook_url
         if not url:
             raise ValueError(
-                f"No discord_webhook_url configured for server '{server.name}' "
+                f"No discord_webhook_url configured for server '{server.host}:{server.game_port}' "
                 "and no global discord_webhook_url set."
             )
         return url
