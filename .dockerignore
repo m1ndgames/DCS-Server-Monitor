@@ -1,0 +1,15 @@
+# Never bake secrets or local config into the image.
+# These are provided at runtime via docker-compose volume mounts.
+config.yml
+.env
+data/
+
+# Dev/tooling noise
+.git
+.github
+.idea
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+*.egg-info
