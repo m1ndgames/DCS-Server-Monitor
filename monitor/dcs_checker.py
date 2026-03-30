@@ -101,15 +101,6 @@ class DCSChecker:
         resp.raise_for_status()
         return self._decrypt(resp.text)
 
-    def _is_webui_reachable(self) -> bool:
-        """Check if the web UI HTTP server responds at all (even with 422)."""
-        try:
-            url = f"http://{self.host}:{self.webui_port}/"
-            resp = requests.get(url, timeout=self.webui_timeout)
-            return resp.status_code < 500
-        except requests.RequestException:
-            return False
-
     def fetch_server_info(self) -> Optional[ServerInfo]:
         try:
             mission = self._api_call("getMissionInfo")
@@ -132,14 +123,8 @@ class DCSChecker:
                 players=players,
             )
         except Exception as exc:
-            logger.debug("Web UI encrypted API failed: %s", exc)
-
-        # Fallback: check if HTTP server is merely reachable
-        if self._is_webui_reachable():
-            logger.debug("Web UI reachable but API unavailable")
-            return ServerInfo(mission_name="Unknown", mission_time=0.0)
-
-        return None
+            logger.debug("Web UI API unavailable: %s", exc)
+            return None
 
     # ------------------------------------------------------------------
     # Combined check
