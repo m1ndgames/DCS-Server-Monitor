@@ -36,6 +36,8 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
     notifier = DiscordNotifier(
         webhook_url=cfg.webhook_for(server),
         server_name=server.name,
+        host=server.host,
+        port=server.game_port,
     )
 
     state_path = os.path.join(cfg.data_dir, _slugify(server.name), "state.json")

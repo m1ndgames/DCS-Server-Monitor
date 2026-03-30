@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Optional
 
 import requests
@@ -31,12 +32,16 @@ class Embed:
 
 
 class DiscordNotifier:
-    def __init__(self, webhook_url: str, server_name: str):
+    def __init__(self, webhook_url: str, server_name: str, host: str, port: int):
         self.webhook_url = webhook_url
         self.server_name = server_name
+        self._address = f"{host}:{port}"
 
     def _send(self, embed: Embed) -> None:
-        payload = {"embeds": [embed.to_dict()]}
+        d = embed.to_dict()
+        d["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        d["footer"] = {"text": self._address}
+        payload = {"embeds": [d]}
         try:
             resp = requests.post(self.webhook_url, json=payload, timeout=15)
             resp.raise_for_status()
