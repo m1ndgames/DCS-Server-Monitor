@@ -83,54 +83,60 @@ class DCSChecker:
     # DCS Web UI encrypted API
     # ------------------------------------------------------------------
 
-    def _encrypt(self, payload: dict) -> str:
+    def _encrypt(self, payload: dict) -> bytes:
         iv = os.urandom(16)
-        data = json.dumps(payload).encode()
+        data = json.dumps(payload).encode("ascii")
         cipher = AES.new(self._key, AES.MODE_CBC, iv)
         ciphertext = cipher.encrypt(pad(data, AES.block_size))
-        return base64.b64encode(iv + ciphertext).decode()
+        return json.dumps({
+            "iv": base64.b64encode(iv).decode("ascii"),
+            "ct": base64.b64encode(ciphertext).decode("ascii"),
+        }).encode("ascii")
 
-    def _decrypt(self, encoded: str) -> dict:
-        raw = base64.b64decode(encoded)
-        iv, ciphertext = raw[:16], raw[16:]
+    def _decrypt(self, body: bytes) -> dict:
+        data = json.loads(body)
+        ct = base64.b64decode(data["ct"])
+        iv = base64.b64decode(data["iv"])
         cipher = AES.new(self._key, AES.MODE_CBC, iv)
-        plaintext = unpad(cipher.decrypt(ciphertext), AES.block_size)
+        plaintext = unpad(cipher.decrypt(ct), AES.block_size)
         return json.loads(plaintext)
 
-    def _api_call(self, method: str, params: Optional[dict] = None) -> dict:
+    def _api_call(self, uri: str) -> dict:
         url = f"http://{self.host}:{self.webui_port}/encryptedRequest"
-        body = self._encrypt({"method": method, "params": params or {}})
-        resp = requests.post(url, data=body, auth=self._auth, timeout=self.webui_timeout)
+        body = self._encrypt({"uri": uri})
+        resp = requests.post(
+            url,
+            data=body,
+            auth=self._auth,
+            headers={"Content-Type": "application/json"},
+            timeout=self.webui_timeout,
+        )
         resp.raise_for_status()
-        return self._decrypt(resp.text)
+        return self._decrypt(resp.content)
 
     def fetch_server_info(self) -> Optional[ServerInfo]:
         try:
             mission = self._api_call("getMissionInfo")
             players_resp = self._api_call("getPlayers")
 
-            raw_players = players_resp.get("players", [])
+            raw_players = players_resp.get("players", {}).get("all", {}).values()
             players = [
                 PlayerInfo(
                     id=p.get("id", 0),
                     name=p.get("name", ""),
-                    slot=p.get("slot", ""),
+                    slot=str(p.get("slot", "")),
                     side=p.get("side", 0),
                 )
                 for p in raw_players
             ]
 
             return ServerInfo(
-                mission_name=mission.get("name", "Unknown"),
-                mission_time=float(mission.get("missionTime", 0)),
+                mission_name=mission.get("mission_name", "Unknown"),
+                mission_time=float(mission.get("mission_time", 0)),
                 players=players,
             )
         except requests.HTTPError as exc:
-            logger.warning(
-                "Web UI API returned HTTP %s — if this is 422, check that your "
-                "reverse proxy rewrites the Host header to 'localhost'",
-                exc.response.status_code,
-            )
+            logger.warning("Web UI API returned HTTP %s", exc.response.status_code)
             return None
         except Exception as exc:
             logger.warning("Web UI API unavailable: %s", exc)
