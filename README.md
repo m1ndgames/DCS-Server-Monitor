@@ -166,7 +166,12 @@ Paste the output hash into the `basicauth` block:
         monitor <paste-hash-here>
     }
 
-    reverse_proxy localhost:8088
+    reverse_proxy localhost:8088 {
+        # Required: DCS checks the Host header to decide if a request is local.
+        # Without this, Caddy forwards your external domain as the Host and DCS
+        # rejects the request with HTTP 422.
+        header_up Host localhost
+    }
 }
 ```
 

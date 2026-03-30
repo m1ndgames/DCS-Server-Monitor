@@ -125,8 +125,15 @@ class DCSChecker:
                 mission_time=float(mission.get("missionTime", 0)),
                 players=players,
             )
+        except requests.HTTPError as exc:
+            logger.warning(
+                "Web UI API returned HTTP %s — if this is 422, check that your "
+                "reverse proxy rewrites the Host header to 'localhost'",
+                exc.response.status_code,
+            )
+            return None
         except Exception as exc:
-            logger.debug("Web UI API unavailable: %s", exc)
+            logger.warning("Web UI API unavailable: %s", exc)
             return None
 
     # ------------------------------------------------------------------

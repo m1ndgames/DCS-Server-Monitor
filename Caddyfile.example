@@ -20,5 +20,10 @@
         monitor $2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4IILHHjG9mm
     }
 
-    reverse_proxy localhost:8088
+    reverse_proxy localhost:8088 {
+        # DCS only responds to requests it sees as coming from localhost.
+        # Without this, Caddy forwards the original Host header (your external
+        # domain/IP) and DCS rejects the request with HTTP 422.
+        header_up Host localhost
+    }
 }
