@@ -69,6 +69,24 @@ class DiscordNotifier:
             )
         )
 
+    def webui_available(self, info: ServerInfo) -> None:
+        fields = [
+            {"name": "Mission", "value": info.mission_name, "inline": True},
+            {"name": "Mission Time", "value": info.mission_time_str(), "inline": True},
+            {"name": "Players Online", "value": str(info.player_count), "inline": True},
+        ]
+        if info.player_count > 0:
+            names = "\n".join(p.name for p in info.players if p.id != 1) or "—"
+            fields.append({"name": "Player List", "value": names, "inline": False})
+        self._send(
+            Embed(
+                title=f":green_circle: {self.server_name} — Web UI Online",
+                description="Mission details are now available.",
+                color=COLOR_GREEN,
+                fields=fields,
+            )
+        )
+
     def webui_unavailable(self) -> None:
         self._send(
             Embed(

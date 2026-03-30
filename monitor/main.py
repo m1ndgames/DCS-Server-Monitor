@@ -76,6 +76,7 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
                     state.webui_up = False
                 elif result.webui_available and not state.webui_up:
                     logger.info("Web UI became available")
+                    notifier.webui_available(result.server_info)
                     state.webui_up = True
 
                 # --- Mission change ---
