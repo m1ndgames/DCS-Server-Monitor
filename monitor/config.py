@@ -12,6 +12,9 @@ class ServerConfig:
     game_port: int = 10308
     webui_port: int = 8088
     webui_secret: str = "DigitalCombatSimulator.com"
+    # Basic auth credentials for a reverse proxy sitting in front of the Web UI
+    webui_user: Optional[str] = None
+    webui_pass: Optional[str] = None
     # When set, overrides the global discord_webhook_url for this server
     discord_webhook_url: Optional[str] = None
     # When set, overrides global check/status intervals for this server
@@ -61,6 +64,8 @@ class GlobalConfig:
                 game_port=s.get("game_port", 10308),
                 webui_port=s.get("webui_port", 8088),
                 webui_secret=s.get("webui_secret", "DigitalCombatSimulator.com"),
+                webui_user=s.get("webui_user"),
+                webui_pass=s.get("webui_pass"),
                 discord_webhook_url=s.get("discord_webhook_url"),
                 check_interval=s.get("check_interval"),
                 status_interval=s.get("status_interval"),

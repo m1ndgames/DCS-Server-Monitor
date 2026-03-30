@@ -30,6 +30,8 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
         webui_secret=server.webui_secret,
         port_timeout=cfg.port_timeout,
         webui_timeout=cfg.webui_timeout,
+        webui_user=server.webui_user,
+        webui_pass=server.webui_pass,
     )
     notifier = DiscordNotifier(
         webhook_url=cfg.webhook_for(server),

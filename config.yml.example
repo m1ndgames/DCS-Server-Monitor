@@ -11,7 +11,11 @@ servers:
     host: "10.0.0.1"
     game_port: 10308
     webui_port: 8088
-    # webui_secret defaults to "DigitalCombatSimulator.com" for local connections
+    # webui_secret defaults to "DigitalCombatSimulator.com" for local connections.
+    # If you expose the Web UI via a reverse proxy (see Caddyfile.example), the
+    # secret stays the same — add webui_user/webui_pass for the proxy's basic auth:
+    # webui_user: monitor
+    # webui_pass: your-password
     # discord_webhook_url: optional — overrides the global webhook for this server
 
   - name: "Persian Gulf Server"

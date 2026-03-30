@@ -55,6 +55,8 @@ class DCSChecker:
         webui_secret: str,
         port_timeout: float,
         webui_timeout: float,
+        webui_user: Optional[str] = None,
+        webui_pass: Optional[str] = None,
     ):
         self.host = host
         self.game_port = game_port
@@ -62,6 +64,7 @@ class DCSChecker:
         self.webui_timeout = webui_timeout
         self.port_timeout = port_timeout
         self._key = hashlib.sha256(webui_secret.encode()).digest()
+        self._auth = (webui_user, webui_pass) if webui_user and webui_pass else None
 
     # ------------------------------------------------------------------
     # Port check
@@ -97,7 +100,7 @@ class DCSChecker:
     def _api_call(self, method: str, params: Optional[dict] = None) -> dict:
         url = f"http://{self.host}:{self.webui_port}/encryptedRequest"
         body = self._encrypt({"method": method, "params": params or {}})
-        resp = requests.post(url, data=body, timeout=self.webui_timeout)
+        resp = requests.post(url, data=body, auth=self._auth, timeout=self.webui_timeout)
         resp.raise_for_status()
         return self._decrypt(resp.text)
 

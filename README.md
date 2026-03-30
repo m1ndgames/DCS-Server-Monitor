@@ -102,7 +102,9 @@ All configuration lives in `config.yml`. The file has two sections: global defau
 | `host` | **required** | IP address or hostname of the DCS server |
 | `game_port` | `10308` | DCS game port (TCP) |
 | `webui_port` | `8088` | DCS Web UI port |
-| `webui_secret` | `DigitalCombatSimulator.com` | Encryption key for the Web UI API. The default works for servers accessible on the local network; remote servers require a negotiated secret |
+| `webui_secret` | `DigitalCombatSimulator.com` | Encryption key for the Web UI API. The default works when the Web UI is accessed via a local reverse proxy (see below) |
+| `webui_user` | _(none)_ | Basic auth username for a reverse proxy in front of the Web UI |
+| `webui_pass` | _(none)_ | Basic auth password for a reverse proxy in front of the Web UI |
 | `discord_webhook_url` | _(inherits global)_ | Override the webhook for this server only |
 | `check_interval` | _(inherits global)_ | Override the check frequency for this server |
 | `status_interval` | _(inherits global)_ | Override the status post interval for this server |
@@ -131,6 +133,78 @@ servers:
     discord_webhook_url: "https://discord.com/api/webhooks/SYRIA_CHANNEL"
     status_interval: 3600     # hourly status updates
 ```
+
+---
+
+## Exposing the DCS Web UI via a reverse proxy
+
+The DCS dedicated server Web UI only responds to requests originating from **localhost**. To let the monitor reach it from an external machine you need a reverse proxy running on the **same host as DCS** that forwards requests to `localhost:8088`.
+
+Because the proxy runs locally, DCS still sees all requests as coming from localhost — so the default `webui_secret` (`DigitalCombatSimulator.com`) continues to work. The basic auth is purely to protect the proxy endpoint from unauthorized access.
+
+### Using Caddy (recommended)
+
+[Caddy](https://caddyserver.com/) is a single binary with no runtime dependencies and automatic HTTPS support.
+
+**1. Install Caddy on the DCS server**
+
+Follow the [official install guide](https://caddyserver.com/docs/install) for your OS (Linux/Windows packages available).
+
+**2. Create a Caddyfile**
+
+Copy `Caddyfile.example` from this repo and generate a real password hash:
+
+```bash
+caddy hash-password --plaintext 'your-strong-password'
+```
+
+Paste the output hash into the `basicauth` block:
+
+```
+:8089 {
+    basicauth {
+        monitor <paste-hash-here>
+    }
+
+    reverse_proxy localhost:8088
+}
+```
+
+> **HTTPS with a domain:** replace `:8089` with your domain name (`dcs.yourdomain.com`) and Caddy will obtain a Let's Encrypt certificate automatically. No other changes needed.
+
+**3. Run Caddy**
+
+```bash
+caddy run --config /path/to/Caddyfile
+```
+
+Or install it as a service so it starts with the machine:
+
+```bash
+# Linux (systemd)
+sudo caddy start --config /path/to/Caddyfile
+
+# Windows — see https://caddyserver.com/docs/running#windows-service
+```
+
+**4. Update `config.yml` in the monitor**
+
+Point the server entry at the Caddy port and supply the credentials:
+
+```yaml
+servers:
+  - name: "My DCS Server"
+    host: "your-dcs-server-ip"
+    game_port: 10308
+    webui_port: 8089        # Caddy's external port
+    # webui_secret stays as the default — Caddy forwards to localhost
+    webui_user: monitor
+    webui_pass: your-strong-password
+```
+
+**5. Open the port in your firewall**
+
+Allow inbound TCP on port `8089` (or `443` if using HTTPS) from the monitoring host only. Keep port `8088` closed externally.
 
 ---
 
