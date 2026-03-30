@@ -1,0 +1,10 @@
+services:
+  dcs-monitor:
+    image: ghcr.io/${GITHUB_REPOSITORY:-your-org/dcs-server-monitor}:latest
+    restart: unless-stopped
+    environment:
+      CONFIG_FILE: /app/config.yml
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./config.yml:/app/config.yml:ro
+      - ./data:/app/data

@@ -1,0 +1,32 @@
+# Global defaults — applied to all servers unless overridden per-server
+discord_webhook_url: "https://discord.com/api/webhooks/GLOBAL_WEBHOOK"
+check_interval: 60          # seconds between checks
+status_interval: 21600      # seconds between periodic status posts (6h)
+port_timeout: 5             # TCP connect timeout (seconds)
+webui_timeout: 10           # HTTP request timeout (seconds)
+log_level: INFO             # DEBUG | INFO | WARNING | ERROR
+
+servers:
+  - name: "Caucasus 24/7"
+    host: "10.0.0.1"
+    game_port: 10308
+    webui_port: 8088
+    # webui_secret defaults to "DigitalCombatSimulator.com" for local connections
+    # discord_webhook_url: optional — overrides the global webhook for this server
+
+  - name: "Persian Gulf Server"
+    host: "10.0.0.2"
+    game_port: 10308
+    webui_port: 8088
+    # Per-server Discord channel
+    discord_webhook_url: "https://discord.com/api/webhooks/PG_CHANNEL_WEBHOOK"
+    # Check this server more frequently
+    check_interval: 30
+
+  - name: "Syria Night Operations"
+    host: "syria.example.com"
+    game_port: 10309           # non-default port
+    webui_port: 8089
+    webui_secret: "custom-secret-key"
+    discord_webhook_url: "https://discord.com/api/webhooks/SYRIA_CHANNEL_WEBHOOK"
+    status_interval: 3600      # hourly status for this server
