@@ -15,13 +15,9 @@ def _slugify(name: str) -> str:
 
 
 def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
-    logger = logging.getLogger(f"monitor.{_slugify(server.name)}")
-    logger.info(
-        "Starting monitor for '%s' at %s:%d",
-        server.name,
-        server.host,
-        server.game_port,
-    )
+    slug = _slugify(f"{server.host}-{server.game_port}")
+    logger = logging.getLogger(f"monitor.{slug}")
+    logger.info("Starting monitor for %s:%d", server.host, server.game_port)
 
     checker = DCSChecker(
         host=server.host,
@@ -33,18 +29,20 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
         webui_user=server.webui_user,
         webui_pass=server.webui_pass,
     )
+    state_path = os.path.join(cfg.data_dir, slug, "state.json")
+    state = MonitorState.load(state_path)
+
     notifier = DiscordNotifier(
         webhook_url=cfg.webhook_for(server),
-        server_name=server.name,
+        server_name=state.server_name or f"{server.host}:{server.game_port}",
         host=server.host,
         port=server.game_port,
     )
 
-    state_path = os.path.join(cfg.data_dir, _slugify(server.name), "state.json")
-    state = MonitorState.load(state_path)
-
     check_interval = cfg.check_interval_for(server)
     status_interval = cfg.status_interval_for(server)
+    webui_retries = cfg.webui_retries_for(server)
+    webui_retry_interval = cfg.webui_retry_interval_for(server)
 
     while True:
         try:
@@ -70,12 +68,31 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
                 state.webui_up = False
                 state.last_mission = ""
 
+            # --- Fetch server name from Web UI (once, then cached in state) ---
+            if result.webui_available and not state.server_name:
+                name = checker.fetch_server_name()
+                if name:
+                    state.server_name = name
+                    notifier.server_name = name
+                    logger.info("Server name resolved: %s", name)
+
             # --- Web UI state changes (only when port is open) ---
             if result.port_open:
                 if not result.webui_available and state.webui_up:
-                    logger.info("Web UI became unavailable")
-                    notifier.webui_unavailable()
-                    state.webui_up = False
+                    confirmed_down = True
+                    for attempt in range(1, webui_retries):
+                        logger.debug(
+                            "Web UI check failed, retry %d/%d in %ds",
+                            attempt, webui_retries - 1, webui_retry_interval,
+                        )
+                        time.sleep(webui_retry_interval)
+                        if checker.fetch_server_info() is not None:
+                            confirmed_down = False
+                            break
+                    if confirmed_down:
+                        logger.info("Web UI became unavailable (confirmed after %d tries)", webui_retries)
+                        notifier.webui_unavailable()
+                        state.webui_up = False
                 elif result.webui_available and not state.webui_up:
                     logger.info("Web UI became available")
                     notifier.webui_available(result.server_info)
@@ -131,7 +148,7 @@ def run() -> None:
         threading.Thread(
             target=_monitor_server,
             args=(cfg, server),
-            name=_slugify(server.name),
+            name=_slugify(f"{server.host}-{server.game_port}"),
             daemon=True,
         )
         for server in cfg.servers

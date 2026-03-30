@@ -9,7 +9,7 @@ Supports monitoring **multiple servers** from a single container, each with inde
 ## Features
 
 - **Port check** — TCP connect to the DCS game port (default 10308) to detect server up/down
-- **Web UI integration** — fetches mission name, mission time, and player list via the DCS encrypted Web UI API (port 8088)
+- **Web UI integration** — fetches server name, mission name, mission time, and player list via the DCS encrypted Web UI API (port 8088). The server name is resolved automatically on first contact and cached — no need to configure it manually.
 - **Discord alerts** for:
   - Server going offline / coming back online
   - Web UI becoming unreachable while the port is still open
@@ -50,8 +50,7 @@ Open `config.yml` and fill in your servers and Discord webhook(s):
 discord_webhook_url: "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
 
 servers:
-  - name: "My DCS Server"
-    host: "your-server-ip-or-hostname"
+  - host: "your-server-ip-or-hostname"
     game_port: 10308
     webui_port: 8088
 ```
@@ -92,13 +91,14 @@ All configuration lives in `config.yml`. The file has two sections: global defau
 | `status_interval` | `21600` | Seconds between periodic status posts (6 h) |
 | `port_timeout` | `5` | TCP connect timeout in seconds |
 | `webui_timeout` | `10` | HTTP request timeout in seconds |
+| `webui_retries` | `3` | Consecutive failed Web UI checks before sending an alert (to survive mission reloads) |
+| `webui_retry_interval` | `10` | Seconds between Web UI retry attempts |
 | `log_level` | `INFO` | `DEBUG` · `INFO` · `WARNING` · `ERROR` |
 
 ### Per-server options
 
 | Key | Default | Description |
 |---|---|---|
-| `name` | **required** | Display name used in Discord messages |
 | `host` | **required** | IP address or hostname of the DCS server |
 | `game_port` | `10308` | DCS game port (TCP) |
 | `webui_port` | `8088` | DCS Web UI port |
@@ -108,6 +108,8 @@ All configuration lives in `config.yml`. The file has two sections: global defau
 | `discord_webhook_url` | _(inherits global)_ | Override the webhook for this server only |
 | `check_interval` | _(inherits global)_ | Override the check frequency for this server |
 | `status_interval` | _(inherits global)_ | Override the status post interval for this server |
+| `webui_retries` | _(inherits global)_ | Override the Web UI retry count for this server |
+| `webui_retry_interval` | _(inherits global)_ | Override the Web UI retry interval for this server |
 
 ### Example: multiple servers with separate channels
 
@@ -118,16 +120,13 @@ check_interval: 60
 status_interval: 21600
 
 servers:
-  - name: "Caucasus 24/7"
-    host: "10.0.0.1"
+  - host: "10.0.0.1"
 
-  - name: "Persian Gulf Server"
-    host: "10.0.0.2"
+  - host: "10.0.0.2"
     discord_webhook_url: "https://discord.com/api/webhooks/PG_CHANNEL"
     check_interval: 30        # check more frequently
 
-  - name: "Syria Night Ops"
-    host: "syria.example.com"
+  - host: "syria.example.com"
     game_port: 10309
     webui_port: 8089
     discord_webhook_url: "https://discord.com/api/webhooks/SYRIA_CHANNEL"
@@ -198,8 +197,7 @@ Point the server entry at the Caddy port and supply the credentials:
 
 ```yaml
 servers:
-  - name: "My DCS Server"
-    host: "your-dcs-server-ip"
+  - host: "your-dcs-server-ip"
     game_port: 10308
     webui_port: 8089        # Caddy's external port
     # webui_secret stays as the default — Caddy forwards to localhost

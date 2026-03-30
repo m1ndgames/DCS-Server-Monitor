@@ -13,6 +13,7 @@ class MonitorState:
     webui_up: bool = False
     last_mission: str = ""
     last_status_ts: float = 0.0  # unix timestamp of last periodic status
+    server_name: str = ""  # cached from DCS Web UI getServerSettings
 
     def save(self, path: str) -> None:
         os.makedirs(os.path.dirname(path), exist_ok=True)

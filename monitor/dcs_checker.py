@@ -114,6 +114,14 @@ class DCSChecker:
         resp.raise_for_status()
         return self._decrypt(resp.content)
 
+    def fetch_server_name(self) -> Optional[str]:
+        try:
+            result = self._api_call("getServerSettings")
+            return result.get("settings", {}).get("name") or None
+        except Exception as exc:
+            logger.warning("Could not fetch server name: %s", exc)
+            return None
+
     def fetch_server_info(self) -> Optional[ServerInfo]:
         try:
             mission = self._api_call("getMissionInfo")

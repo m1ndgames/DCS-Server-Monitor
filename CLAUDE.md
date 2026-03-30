@@ -29,9 +29,11 @@ The DCS dedicated server exposes an HTTP API at `POST /encryptedRequest` on port
 
 `DCSChecker._api_call()` handles encrypt → POST → decrypt. It passes HTTP basic auth credentials (`self._auth`) when `webui_user`/`webui_pass` are configured, which is required when a reverse proxy with basic auth sits in front of the Web UI. If the API call fails for any reason, `fetch_server_info()` returns `None` (Web UI unavailable).
 
+`DCSChecker.fetch_server_name()` calls `getServerSettings` and returns `settings.name`. This is called once from `_monitor_server` when the Web UI first becomes reachable and `state.server_name` is empty; the result is cached in state and assigned to `notifier.server_name`.
+
 ## State persistence
 
-Each server gets its own state file at `<data_dir>/<slugified-name>/state.json`. The slug is produced by `_slugify()` in `main.py` (lowercase alphanumeric, hyphens). State tracks `server_up`, `webui_up`, `last_mission`, and `last_status_ts` (Unix timestamp).
+Each server gets its own state file at `<data_dir>/<slug>/state.json`. The slug is derived from `host` + `game_port` (e.g. `116-202-232-32-10308`) by `_slugify()` in `main.py` (lowercase alphanumeric, hyphens). State tracks `server_up`, `webui_up`, `last_mission`, `last_status_ts` (Unix timestamp), and `server_name` (fetched from the Web UI and cached so it survives restarts).
 
 ## Alert logic (in `_monitor_server`)
 
@@ -39,7 +41,7 @@ Each server gets its own state file at `<data_dir>/<slugified-name>/state.json`.
 |---|---|
 | Port was down, now up | `server_up()` |
 | Port was up, now down | `server_down()` |
-| Port up, Web UI was up, now down | `webui_unavailable()` |
+| Port up, Web UI was up, now down (confirmed after `webui_retries` attempts) | `webui_unavailable()` |
 | Mission name changed | `mission_changed()` |
 | `now - last_status_ts >= status_interval` | `status_update()` |
 
