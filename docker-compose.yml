@@ -1,6 +1,6 @@
 services:
   dcs-monitor:
-    image: ghcr.io/${GITHUB_REPOSITORY:-your-org/dcs-server-monitor}:latest
+    image: ghcr.io/m1ndgames/dcs-server-monitor:latest
     restart: unless-stopped
     environment:
       CONFIG_FILE: /app/config.yml
