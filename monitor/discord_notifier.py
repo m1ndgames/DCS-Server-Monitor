@@ -42,9 +42,7 @@ class DiscordNotifier:
         d["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         d["footer"] = {
             "text": f"{self._address} • DCS-Server-Monitor",
-            "icon_url": "https://github.com/favicon.ico",
         }
-        d["url"] = "https://github.com/m1ndgames/DCS-Server-Monitor"
         payload = {"embeds": [d]}
         try:
             resp = requests.post(self.webhook_url, json=payload, timeout=15)
