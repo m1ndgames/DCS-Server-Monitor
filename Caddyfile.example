@@ -8,10 +8,9 @@
 # Generate a password hash with:
 #   caddy hash-password --plaintext 'your-password'
 #
-# Replace the port below with whatever you want to expose externally.
-# If you have a domain and want automatic HTTPS, replace ":8089" with
-# "dcs.yourdomain.com" — Caddy will obtain a Let's Encrypt certificate
-# automatically.
+# --- Option A: plain HTTP on a custom port ---
+# Use this if you don't have a domain. Set webui_port to 8089 in config.yml.
+# No webui_ssl needed (HTTP is the default).
 
 :8089 {
     basicauth {
@@ -27,3 +26,18 @@
         header_up Host localhost
     }
 }
+
+# --- Option B: HTTPS with a domain (recommended) ---
+# Replace "dcs.yourdomain.com" with your domain. Caddy obtains a Let's Encrypt
+# certificate automatically and listens on port 443.
+# In config.yml set: webui_port: 443 and webui_ssl: true
+
+# dcs.yourdomain.com {
+#     basicauth {
+#         monitor $2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4IILHHjG9mm
+#     }
+#
+#     reverse_proxy localhost:8088 {
+#         header_up Host localhost
+#     }
+# }

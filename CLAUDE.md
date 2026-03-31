@@ -27,7 +27,7 @@ Each server runs independently in its own thread (`threading.Thread`). Threads s
 
 The DCS dedicated server exposes an HTTP API at `POST /encryptedRequest` on port 8088. It only responds to requests from localhost. Payloads are AES-CBC encrypted (key = SHA-256 of the secret, IV prepended to ciphertext, base64-encoded). The default secret `"DigitalCombatSimulator.com"` works when the request originates from localhost — which is always the case when a local reverse proxy (e.g. Caddy) is used.
 
-`DCSChecker._api_call()` handles encrypt → POST → decrypt. It passes HTTP basic auth credentials (`self._auth`) when `webui_user`/`webui_pass` are configured, which is required when a reverse proxy with basic auth sits in front of the Web UI. If the API call fails for any reason, `fetch_server_info()` returns `None` (Web UI unavailable).
+`DCSChecker._api_call()` handles encrypt → POST → decrypt. It uses HTTPS when `webui_ssl=True` (stored as `self._scheme`), with TLS verification controlled by `webui_ssl_verify` (stored as `self._ssl_verify`). It passes HTTP basic auth credentials (`self._auth`) when `webui_user`/`webui_pass` are configured, which is required when a reverse proxy with basic auth sits in front of the Web UI. If the API call fails for any reason, `fetch_server_info()` returns `None` (Web UI unavailable).
 
 `DCSChecker.fetch_server_name()` calls `getServerSettings` and returns `settings.name`. This is called once from `_monitor_server` when the Web UI first becomes reachable and `state.server_name` is empty; the result is cached in state and assigned to `notifier.server_name`.
 

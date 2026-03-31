@@ -26,6 +26,8 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
         webui_secret=server.webui_secret,
         port_timeout=cfg.port_timeout,
         webui_timeout=cfg.webui_timeout,
+        webui_ssl=server.webui_ssl,
+        webui_ssl_verify=server.webui_ssl_verify,
         webui_user=server.webui_user,
         webui_pass=server.webui_pass,
     )

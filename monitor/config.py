@@ -11,6 +11,9 @@ class ServerConfig:
     game_port: int = 10308
     webui_port: int = 8088
     webui_secret: str = "DigitalCombatSimulator.com"
+    # Use HTTPS when the Web UI is behind an SSL-terminating reverse proxy
+    webui_ssl: bool = False
+    webui_ssl_verify: bool = True  # set False to skip certificate verification
     # Basic auth credentials for a reverse proxy sitting in front of the Web UI
     webui_user: Optional[str] = None
     webui_pass: Optional[str] = None
@@ -73,6 +76,8 @@ class GlobalConfig:
                 game_port=s.get("game_port", 10308),
                 webui_port=s.get("webui_port", 8088),
                 webui_secret=s.get("webui_secret", "DigitalCombatSimulator.com"),
+                webui_ssl=bool(s.get("webui_ssl", False)),
+                webui_ssl_verify=bool(s.get("webui_ssl_verify", True)),
                 webui_user=s.get("webui_user"),
                 webui_pass=s.get("webui_pass"),
                 discord_webhook_url=s.get("discord_webhook_url"),

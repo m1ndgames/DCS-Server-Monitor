@@ -55,6 +55,8 @@ class DCSChecker:
         webui_secret: str,
         port_timeout: float,
         webui_timeout: float,
+        webui_ssl: bool = False,
+        webui_ssl_verify: bool = True,
         webui_user: Optional[str] = None,
         webui_pass: Optional[str] = None,
     ):
@@ -64,6 +66,8 @@ class DCSChecker:
         self.webui_timeout = webui_timeout
         self.port_timeout = port_timeout
         self._key = hashlib.sha256(webui_secret.encode()).digest()
+        self._scheme = "https" if webui_ssl else "http"
+        self._ssl_verify = webui_ssl_verify
         self._auth = (webui_user, webui_pass) if webui_user and webui_pass else None
 
     # ------------------------------------------------------------------
@@ -102,7 +106,7 @@ class DCSChecker:
         return json.loads(plaintext)
 
     def _api_call(self, uri: str) -> dict:
-        url = f"http://{self.host}:{self.webui_port}/encryptedRequest"
+        url = f"{self._scheme}://{self.host}:{self.webui_port}/encryptedRequest"
         body = self._encrypt({"uri": uri})
         resp = requests.post(
             url,
@@ -110,6 +114,7 @@ class DCSChecker:
             auth=self._auth,
             headers={"Content-Type": "application/json"},
             timeout=self.webui_timeout,
+            verify=self._ssl_verify,
         )
         resp.raise_for_status()
         return self._decrypt(resp.content)

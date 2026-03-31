@@ -103,6 +103,8 @@ All configuration lives in `config.yml`. The file has two sections: global defau
 | `game_port` | `10308` | DCS game port (TCP) |
 | `webui_port` | `8088` | DCS Web UI port |
 | `webui_secret` | `DigitalCombatSimulator.com` | Encryption key for the Web UI API. The default works when the Web UI is accessed via a local reverse proxy (see below) |
+| `webui_ssl` | `false` | Set `true` when the Web UI is behind an SSL-terminating reverse proxy (uses HTTPS instead of HTTP) |
+| `webui_ssl_verify` | `true` | Set `false` to skip TLS certificate verification (useful for self-signed certs) |
 | `webui_user` | _(none)_ | Basic auth username for a reverse proxy in front of the Web UI |
 | `webui_pass` | _(none)_ | Basic auth password for a reverse proxy in front of the Web UI |
 | `discord_webhook_url` | _(inherits global)_ | Override the webhook for this server only |
@@ -199,15 +201,17 @@ Point the server entry at the Caddy port and supply the credentials:
 servers:
   - host: "your-dcs-server-ip"
     game_port: 10308
-    webui_port: 8089        # Caddy's external port
+    webui_port: 443         # Caddy's external port (8089 for plain HTTP, 443 for HTTPS)
     # webui_secret stays as the default — Caddy forwards to localhost
+    webui_ssl: true         # enable when Caddy is doing SSL termination
+    # webui_ssl_verify: false  # uncomment if using a self-signed certificate
     webui_user: monitor
     webui_pass: your-strong-password
 ```
 
 **5. Open the port in your firewall**
 
-Allow inbound TCP on port `8089` (or `443` if using HTTPS) from the monitoring host only. Keep port `8088` closed externally.
+Allow inbound TCP on port `8089` (or `443` for HTTPS) from the monitoring host only. Keep port `8088` closed externally. When using port `443`, set `webui_ssl: true` in the monitor config.
 
 ---
 
