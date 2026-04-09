@@ -8,6 +8,10 @@ import yaml
 @dataclass
 class ServerConfig:
     host: str
+    # When set, used for the TCP port check instead of `host`.
+    # Useful when `host` points to a Cloudflare (or other proxy) IP — set this
+    # to the real DCS server IP so the game-port reachability check bypasses the proxy.
+    game_host: Optional[str] = None
     game_port: int = 10308
     webui_port: int = 8088
     webui_secret: str = "DigitalCombatSimulator.com"
@@ -73,6 +77,7 @@ class GlobalConfig:
         servers = [
             ServerConfig(
                 host=s["host"],
+                game_host=s.get("game_host"),
                 game_port=s.get("game_port", 10308),
                 webui_port=s.get("webui_port", 8088),
                 webui_secret=s.get("webui_secret", "DigitalCombatSimulator.com"),

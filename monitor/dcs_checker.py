@@ -59,8 +59,11 @@ class DCSChecker:
         webui_ssl_verify: bool = True,
         webui_user: Optional[str] = None,
         webui_pass: Optional[str] = None,
+        game_host: Optional[str] = None,
     ):
         self.host = host
+        # Use game_host for the TCP port check when set (e.g. real IP behind Cloudflare)
+        self._game_host = game_host or host
         self.game_port = game_port
         self.webui_port = webui_port
         self.webui_timeout = webui_timeout
@@ -77,7 +80,7 @@ class DCSChecker:
     def check_port(self) -> bool:
         try:
             with socket.create_connection(
-                (self.host, self.game_port), timeout=self.port_timeout
+                (self._game_host, self.game_port), timeout=self.port_timeout
             ):
                 return True
         except (socket.timeout, ConnectionRefusedError, OSError):

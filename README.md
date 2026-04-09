@@ -99,7 +99,8 @@ All configuration lives in `config.yml`. The file has two sections: global defau
 
 | Key | Default | Description |
 |---|---|---|
-| `host` | **required** | IP address or hostname of the DCS server |
+| `host` | **required** | IP address or hostname of the DCS server (used for Web UI API calls and Discord display) |
+| `game_host` | _(same as host)_ | Real IP/hostname used for the TCP port check. Set this when `host` points to a proxy (e.g. Cloudflare) so the port check hits the actual DCS server directly |
 | `game_port` | `10308` | DCS game port (TCP) |
 | `webui_port` | `8088` | DCS Web UI port |
 | `webui_secret` | `DigitalCombatSimulator.com` | Encryption key for the Web UI API. The default works when the Web UI is accessed via a local reverse proxy (see below) |
@@ -133,6 +134,21 @@ servers:
     webui_port: 8089
     discord_webhook_url: "https://discord.com/api/webhooks/SYRIA_CHANNEL"
     status_interval: 3600     # hourly status updates
+```
+
+### Example: server behind Cloudflare
+
+When the DCS server's public hostname is proxied through Cloudflare (or any other TCP proxy), the game port check must bypass the proxy and connect directly to the real server IP. Set `game_host` to the real IP while keeping `host` as the public hostname:
+
+```yaml
+servers:
+  - host: "dcs.yourdomain.com"   # public hostname — used for Web UI API calls and Discord
+    game_host: "1.2.3.4"         # real server IP — used only for the TCP port check
+    game_port: 10308
+    webui_port: 443
+    webui_ssl: true
+    webui_user: monitor
+    webui_pass: your-strong-password
 ```
 
 ---

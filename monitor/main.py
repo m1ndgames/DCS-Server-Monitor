@@ -21,6 +21,7 @@ def _monitor_server(cfg: GlobalConfig, server: ServerConfig) -> None:
 
     checker = DCSChecker(
         host=server.host,
+        game_host=server.game_host,
         game_port=server.game_port,
         webui_port=server.webui_port,
         webui_secret=server.webui_secret,

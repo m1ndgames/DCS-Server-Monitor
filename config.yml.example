@@ -10,6 +10,8 @@ servers:
   - host: "10.0.0.1"
     game_port: 10308
     webui_port: 8088
+    # game_host: "1.2.3.4"    # set to the real server IP when `host` is behind a TCP
+    #                          # proxy (e.g. Cloudflare) — port checks use this address
     # webui_secret defaults to "DigitalCombatSimulator.com" for local connections.
     # If you expose the Web UI via a reverse proxy (see Caddyfile.example), the
     # secret stays the same — add the options below for the proxy:

@@ -21,6 +21,8 @@ Each server runs independently in its own thread (`threading.Thread`). Threads s
 
 `config.yml` is the single source of truth. It has global defaults and a `servers:` list. Per-server keys (`discord_webhook_url`, `check_interval`, `status_interval`) override globals when set.
 
+`ServerConfig.game_host` is an optional override for the TCP port check target. When set, `DCSChecker.check_port()` connects to `game_host` instead of `host`. This is needed when `host` resolves to a proxy IP (e.g. Cloudflare) — the Web UI API calls and Discord display continue to use `host` unchanged.
+
 `GlobalConfig.webhook_for(server)` and `GlobalConfig.check_interval_for(server)` are the canonical accessors — always use these, never read server fields directly in `main.py`.
 
 ## DCS Web UI protocol
