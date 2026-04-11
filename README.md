@@ -267,3 +267,12 @@ CONFIG_FILE=./my-config.yml python -m monitor.main
 State is written to `./data/<server-slug>/state.json` on the host (mounted into the container at `/app/data`). This file tracks whether each server was last seen up or down, which mission was loaded, and when the last status post was sent — so the service doesn't spam Discord after a restart.
 
 The `data/` directory is created automatically on first run.
+
+---
+
+## Support
+
+If you find this project useful, consider supporting it:
+
+- **Ko-fi:** [ko-fi.com/m1ndio](https://ko-fi.com/m1ndio)
+- **Discord:** [discord.gg/JsyZ79UfR8](https://discord.gg/JsyZ79UfR8)
